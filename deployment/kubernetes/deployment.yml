@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ema-rsi-stoch-strategy-deployment
+  labels:
+    app: ema-rsi-stoch-strategy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ema-rsi-stoch-strategy
+  template:
+    metadata:
+      labels:
+        app: ema-rsi-stoch-strategy
+    spec:
+      containers:
+        - name: ema-rsi-stoch-strategy
+          image: azch97/ers:latest
+          imagePullPolicy: Always

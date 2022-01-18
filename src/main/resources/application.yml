@@ -1,0 +1,33 @@
+spring:
+  kafka:
+    bootstrap-servers: ${kafka_bootstrap_servers:host.minikube.internal:9094}
+#    bootstrap-servers: ${kafka_bootstrap_servers:localhost:9092}
+    properties:
+      sasl:
+        jaas:
+          config: org.apache.kafka.common.security.plain.PlainLoginModule required username=${kafka_username:'admin'} password=${kafka_password:'admin-secret'};
+        mechanism: PLAIN
+      security:
+        protocol: SASL_PLAINTEXT
+    consumer:
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      group-id: strategyEmaRsiStoch
+      enable-auto-commit: false
+      client-id: ${random.uuid}
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: "cup:com.wcreators.ersstrategy.dto.CupRateDTO"
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      client-id: ${random.uuid}
+      retries: 2
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: "noAction:com.wcreators.ersstrategy.dto.NoRateActionDTO,action:com.wcreators.ersstrategy.dto.RateActionDTO"
+    jaas:
+      enabled: true
+    listener:
+      poll-timeout: 1800000
+      concurrency: 1
+      ack-mode: manual_immediate
