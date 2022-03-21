@@ -1,21 +1,28 @@
 package com.wcreators.ersstrategy.service.indicators.rsi;
 
+import com.wcreators.ersstrategy.dto.rsi.RsiRequestDTO;
+import com.wcreators.ersstrategy.dto.rsi.RsiResponseDTO;
+import com.wcreators.ersstrategy.feign.EmaFeignClient;
+import com.wcreators.ersstrategy.feign.RsiFeignClient;
 import com.wcreators.ersstrategy.model.Decimal;
 import com.wcreators.ersstrategy.service.indicators.ma.EMA;
 import com.wcreators.ersstrategy.service.storage.StorageIndicator;
 
 public class RSI extends StorageIndicator<Decimal, Decimal> {
 
+    private final RsiFeignClient rsiFeignClient;
     private final StorageIndicator<Decimal, Decimal> maOfU;
     private final StorageIndicator<Decimal, Decimal> maOfD;
     private Decimal prevValue;
 
-    public RSI(int period) {
-        this.maOfU = new EMA(period);
-        this.maOfD = new EMA(period);
+    public RSI(int period, EmaFeignClient emaFeignClient, RsiFeignClient rsiFeignClient) {
+        this.rsiFeignClient = rsiFeignClient;
+        this.maOfU = new EMA(period, emaFeignClient);
+        this.maOfD = new EMA(period, emaFeignClient);
     }
 
-    public RSI(StorageIndicator<Decimal, Decimal> maOfU, StorageIndicator<Decimal, Decimal> maOfD) {
+    public RSI(StorageIndicator<Decimal, Decimal> maOfU, StorageIndicator<Decimal, Decimal> maOfD, RsiFeignClient rsiFeignClient) {
+        this.rsiFeignClient = rsiFeignClient;
         this.maOfU = maOfU;
         this.maOfD = maOfD;
     }
@@ -47,6 +54,8 @@ public class RSI extends StorageIndicator<Decimal, Decimal> {
         Decimal ratio = Decimal.HUNDRED.divide(Decimal.ONE.plus(RS));
 
         prevValue = value;
-        return Decimal.HUNDRED.minus(ratio);
+        Decimal res = Decimal.HUNDRED.minus(ratio);
+
+        return res;
     }
 }

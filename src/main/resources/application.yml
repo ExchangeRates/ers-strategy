@@ -1,7 +1,13 @@
+service:
+  ema-feign-client:
+    url: http://localhost:8080
+  rsi-feign-client:
+    url: http://localhost:8081
+
 spring:
   kafka:
-    bootstrap-servers: ${kafka_bootstrap_servers:host.minikube.internal:9094}
-#    bootstrap-servers: ${kafka_bootstrap_servers:localhost:9092}
+    #    bootstrap-servers: ${kafka_bootstrap_servers:host.minikube.internal:9094}
+    bootstrap-servers: ${kafka_bootstrap_servers:localhost:9092}
     properties:
       sasl:
         jaas:
@@ -12,7 +18,7 @@ spring:
     consumer:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       auto-offset-reset: earliest
-      group-id: strategyEmaRsiStoch
+      group-id: strategyEmaRsiStochastic1
       enable-auto-commit: false
       client-id: ${random.uuid}
       properties:

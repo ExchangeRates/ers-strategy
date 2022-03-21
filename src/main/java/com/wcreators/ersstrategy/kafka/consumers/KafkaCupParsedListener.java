@@ -26,7 +26,7 @@ public class KafkaCupParsedListener {
     private final ProcessRatesService processRatesService;
     private final CupRateMapper mapper;
 
-    @KafkaListener(topics = "parsed.CUP-EUR-USD", clientIdPrefix = "parsed")
+    @KafkaListener(topics = "parsed.CUP-EUR-USD", clientIdPrefix = "parsed-topic")
     public void receive(CupRateDTO dto) {
         CupRatePoint cupRatePoint = mapper.dtoToModel(dto);
         String name = cupRatePoint.getMajor() + "/" + cupRatePoint.getMinor();

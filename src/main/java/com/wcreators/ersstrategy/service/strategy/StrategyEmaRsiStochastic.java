@@ -1,6 +1,8 @@
 package com.wcreators.ersstrategy.service.strategy;
 
 import com.wcreators.ersstrategy.constant.Strategy;
+import com.wcreators.ersstrategy.feign.EmaFeignClient;
+import com.wcreators.ersstrategy.feign.RsiFeignClient;
 import com.wcreators.ersstrategy.model.CupRatePoint;
 import com.wcreators.ersstrategy.model.Decimal;
 import com.wcreators.ersstrategy.model.StrategyResponse;
@@ -26,12 +28,12 @@ public class StrategyEmaRsiStochastic implements ProcessRatesService {
     private final StochasticK stochasticK;
     private final StochasticD stochasticD;
 
-    public StrategyEmaRsiStochastic(Cup cup) {
+    public StrategyEmaRsiStochastic(Cup cup, EmaFeignClient emaFeignClient, RsiFeignClient rsiFeignClient) {
         this.cup = cup;
-        this.ema = new EMA(7);
-        this.rsi = new RSI(3);
+        this.ema = new EMA(7, emaFeignClient);
+        this.rsi = new RSI(3, emaFeignClient, rsiFeignClient);
         this.stochasticK = new StochasticK(6);
-        this.stochasticD = new StochasticD(stochasticK, 3);
+        this.stochasticD = new StochasticD(stochasticK, 3, emaFeignClient);
     }
 
     @Override
