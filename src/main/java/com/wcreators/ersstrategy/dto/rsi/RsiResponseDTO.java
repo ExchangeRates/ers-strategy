@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RsiResponseDTO {
   private Double value;
-  private Double u;
-  private Double d;
+  private Double maOfU;
+  private Double maOfD;
 }

@@ -2,6 +2,7 @@ package com.wcreators.ersstrategy.service.storage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class StorageIndicator<T, E> {
 
@@ -9,11 +10,15 @@ public abstract class StorageIndicator<T, E> {
 
     public E addPoint(T value) {
         E point = calculate(value);
+        addPointWithoutCalc(point);
+        return point;
+    }
+
+    public void addPointWithoutCalc(E point) {
         points.add(point);
         if (points.size() > 150) {
             points.remove(0);
         }
-        return point;
     }
 
     protected abstract E calculate(T value);
@@ -22,8 +27,11 @@ public abstract class StorageIndicator<T, E> {
         return points.isEmpty();
     }
 
-    public E lastAdded() {
-        return points.get(points.size() - 1);
+    public Optional<E> lastAdded() {
+        if (isEmpty()) {
+          return Optional.empty();
+        }
+        return Optional.of(points.get(points.size() - 1));
     }
 
     public int size() {
