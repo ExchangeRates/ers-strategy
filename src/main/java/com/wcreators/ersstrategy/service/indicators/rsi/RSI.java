@@ -28,8 +28,8 @@ public class RSI extends StorageIndicator<Double, Double> {
         RsiRequestDTO request = RsiRequestDTO.builder()
           .value(value)
           .prev(prevValue)
-          .prevU(maOfU.lastAdded().orElseGet(null))
-          .prevD(maOfD.lastAdded().orElseGet(null))
+          .prevU(maOfU.lastAdded().orElse(null))
+          .prevD(maOfD.lastAdded().orElse(null))
           .period(this.period)
           .build();
         RsiResponseDTO response = rsiFeignClient.calculate(request);

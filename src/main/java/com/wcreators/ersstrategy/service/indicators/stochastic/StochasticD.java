@@ -17,7 +17,7 @@ public class StochasticD extends StorageIndicator<Decimal, Decimal> {
 
     @Override
     public Decimal calculate(Decimal value) {
-        Decimal kValue = stochasticK.lastAdded();
-        return ema.addPoint(kValue);
+        Decimal kValue = stochasticK.lastAdded().get();
+        return Decimal.valueOf(ema.addPoint(kValue.doubleValue()));
     }
 }

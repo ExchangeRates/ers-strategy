@@ -3,6 +3,7 @@ package com.wcreators.ersstrategy.service.strategy;
 import com.wcreators.ersstrategy.constant.Strategy;
 import com.wcreators.ersstrategy.feign.EmaFeignClient;
 import com.wcreators.ersstrategy.feign.RsiFeignClient;
+import com.wcreators.ersstrategy.feign.StochasticFeignClient;
 import com.wcreators.ersstrategy.model.CupRatePoint;
 import com.wcreators.ersstrategy.model.Decimal;
 import com.wcreators.ersstrategy.model.StrategyResponse;
@@ -28,11 +29,11 @@ public class StrategyEmaRsiStochastic implements ProcessRatesService {
     private final StochasticK stochasticK;
     private final StochasticD stochasticD;
 
-    public StrategyEmaRsiStochastic(Cup cup, EmaFeignClient emaFeignClient, RsiFeignClient rsiFeignClient) {
+    public StrategyEmaRsiStochastic(Cup cup, EmaFeignClient emaFeignClient, RsiFeignClient rsiFeignClient, StochasticFeignClient stochasticFeignClient) {
         this.cup = cup;
         this.ema = new EMA(7, emaFeignClient);
         this.rsi = new RSI(3, emaFeignClient, rsiFeignClient);
-        this.stochasticK = new StochasticK(6);
+        this.stochasticK = new StochasticK(6, stochasticFeignClient);
         this.stochasticD = new StochasticD(stochasticK, 3, emaFeignClient);
     }
 
@@ -42,8 +43,8 @@ public class StrategyEmaRsiStochastic implements ProcessRatesService {
 
         cup.addPoint(cupPoint);
         Decimal point = cupPoint.getDecimalClose();
-        ema.addPoint(point);
-        rsi.addPoint(point);
+        ema.addPoint(point.doubleValue());
+        rsi.addPoint(point.doubleValue());
         stochasticK.addPoint(point);
         stochasticD.addPoint(point);
 
@@ -69,7 +70,7 @@ public class StrategyEmaRsiStochastic implements ProcessRatesService {
 
     public StrategyResponse testStrategyCall(CupRatePoint lastCupPoint) {
         StrategyResponse negativeResponse = StrategyResponse.builder().isAction(false).build();
-        Decimal lastEmaPoint = ema.lastAdded();
+        Decimal lastEmaPoint = Decimal.valueOf(ema.lastAdded().get());
         Decimal prevCupHigh = cup.get(cup.size() - 2).getDecimalHigh();
         Decimal prevCupLow = cup.get(cup.size() - 2).getDecimalLow();
         if (!(prevCupHigh.compareTo(lastEmaPoint) > 0 && prevCupLow.compareTo(lastEmaPoint) < 0)) {
@@ -84,7 +85,7 @@ public class StrategyEmaRsiStochastic implements ProcessRatesService {
             return negativeResponse.withData(data);
         }
 
-        Decimal lastRsiPoint = rsi.lastAdded();
+        Decimal lastRsiPoint = Decimal.valueOf(rsi.lastAdded().get());
         if (!(lastRsiPoint.compareTo(Decimal.valueOf(50)) > 0)) { // 80 is better
             String data = String.format("Call 3 | rsi: %s", lastRsiPoint);
             log.warn(data);
@@ -93,8 +94,8 @@ public class StrategyEmaRsiStochastic implements ProcessRatesService {
 
         Decimal prevStochasticK = stochasticK.get(stochasticK.size() - 2);
         Decimal prevStochasticD = stochasticD.get(stochasticD.size() - 2);
-        Decimal lastStochasticK = stochasticK.lastAdded();
-        Decimal lastStochasticD = stochasticD.lastAdded();
+        Decimal lastStochasticK = stochasticK.lastAdded().get();
+        Decimal lastStochasticD = stochasticD.lastAdded().get();
         if (!(lastStochasticK.compareTo(prevStochasticK) > 0 && lastStochasticD.compareTo(prevStochasticD) > 0)) {
             String data = String.format("Call 4 | lastK: %s, prevK: %s / lastD: %s, prevD: %s", lastStochasticK, prevStochasticK, lastStochasticD, prevStochasticD);
             log.warn(data);
@@ -113,7 +114,7 @@ public class StrategyEmaRsiStochastic implements ProcessRatesService {
 
     public StrategyResponse testStrategyPut(CupRatePoint lastCupPoint) {
         StrategyResponse negativeResponse = StrategyResponse.builder().isAction(false).build();
-        Decimal lastEmaPoint = ema.lastAdded();
+        Decimal lastEmaPoint = Decimal.valueOf(ema.lastAdded().get());
         Decimal prevCupHigh = cup.get(cup.size() - 2).getDecimalHigh();
         Decimal prevCupLow = cup.get(cup.size() - 2).getDecimalLow();
         if (!(prevCupHigh.compareTo(lastEmaPoint) > 0 && prevCupLow.compareTo(lastEmaPoint) < 0)) {
@@ -128,7 +129,7 @@ public class StrategyEmaRsiStochastic implements ProcessRatesService {
             return negativeResponse.withData(data);
         }
 
-        Decimal lastRsiPoint = rsi.lastAdded();
+        Decimal lastRsiPoint = Decimal.valueOf(rsi.lastAdded().get());
         if (!(lastRsiPoint.compareTo(Decimal.valueOf(50)) < 0)) { // better if bottom line was crossed in (20 or 30)
             String data = String.format("Put 3 | rsi: %s", lastRsiPoint);
             log.warn(data);
@@ -137,8 +138,8 @@ public class StrategyEmaRsiStochastic implements ProcessRatesService {
 
         Decimal prevStochasticK = stochasticK.get(stochasticK.size() - 2);
         Decimal prevStochasticD = stochasticD.get(stochasticD.size() - 2);
-        Decimal lastStochasticK = stochasticK.lastAdded();
-        Decimal lastStochasticD = stochasticD.lastAdded();
+        Decimal lastStochasticK = stochasticK.lastAdded().get();
+        Decimal lastStochasticD = stochasticD.lastAdded().get();
         if (!(lastStochasticK.compareTo(prevStochasticK) < 0 && lastStochasticD.compareTo(prevStochasticD) < 0)) {
             String data = String.format("Put 4 | lastK: %s, prevK: %s / lastD: %s, prevD: %s", lastStochasticK, prevStochasticK, lastStochasticD, prevStochasticD);
             log.warn(data);
